@@ -20,7 +20,10 @@
   <label>要旨ファイル（PDFのみ, 20MBまで）<span class="req">*</span></label>
   <input type="file" id="file" accept="application/pdf">
   <button id="btn" onclick="submit()">提出する</button>
-  <p id="status"></p>
+    <p style="margin-top: 12px; color: #555; font-size: 14px;">
+      「提出が完了しました。受付番号: ...」というメッセージが出たら提出が成功しています。
+    </p>
+    <p id="status"></p>
 
 <script>
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxNNPVNLDwTecB6fFO5aW2FKIf9mg72aUGG3yXLfiQADZE81K4FLqu4E9kUbDGDlJ_0gA/exec';
