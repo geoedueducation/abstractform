@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>要旨提出フォーム</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 0 16px; }
+    label { display: block; margin-top: 14px; font-weight: bold; }
+    input { width: 100%; padding: 8px; margin-top: 4px; box-sizing: border-box; }
+    button { margin-top: 20px; padding: 12px 24px; font-size: 16px; }
+    #status { margin-top: 16px; font-weight: bold; white-space: pre-line; }
+    .req { color: #c00; }
+  </style>
+</head>
+<body>
+  <h2>要旨提出フォーム</h2>
+  <label>氏名 <span class="req">*</span></label>
+  <input type="text" id="name">
+  <label>要旨ファイル（PDFのみ, 20MBまで）<span class="req">*</span></label>
+  <input type="file" id="file" accept="application/pdf">
+  <button id="btn" onclick="submit()">提出する</button>
+  <p id="status"></p>
+
+<script>
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxNNPVNLDwTecB6fFO5aW2FKIf9mg72aUGG3yXLfiQADZE81K4FLqu4E9kUbDGDlJ_0gA/exec';
+
+function submit() {
+  const name = document.getElementById('name').value.trim();
+  const file = document.getElementById('file').files[0];
+
+  if (!name || !file) {
+    setStatus('氏名とファイルの両方を入力してください。', '#c00'); return;
+  }
+  if (file.name.split('.').pop().toLowerCase() !== 'pdf') {
+    setStatus('PDFファイルを選択してください。', '#c00'); return;
+  }
+
+  document.getElementById('btn').disabled = true;
+  setStatus('送信中です。画面を閉じずにお待ちください...', '#333');
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const data = e.target.result.split(',')[1];
+    fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        name: name, fileName: file.name, mimeType: file.type, data: data
+      })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(res) {
+      if (res.status === 'done') {
+        setStatus('提出が完了しました。\n受付番号: ' + res.receiptNo, '#080');
+      } else {
+        setStatus(res.message, '#c00');
+        document.getElementById('btn').disabled = false;
+      }
+    })
+    .catch(function(err) {
+      setStatus('エラーが発生しました: ' + err.message, '#c00');
+      document.getElementById('btn').disabled = false;
+    });
+  };
+  reader.readAsDataURL(file);
+}
+function setStatus(msg, color) {
+  const el = document.getElementById('status');
+  el.innerText = msg; el.style.color = color || '#333';
+}
+</script>
+</body>
+</html>
